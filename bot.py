@@ -8,10 +8,10 @@ from telegram.ext import (
     CallbackContext,
     Updater, MessageHandler, Filters, CallbackQueryHandler,
 )
+from collections import Counter
+import random
 
-db = Storage("shopping_cart")
-
-WELCOME_TEXT = "Welcome to our bot!"
+db = Storage("Trivia")
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s %(module)s:%(lineno)d] %(message)s",
@@ -21,12 +21,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 players = {}
+questions_counter = Counter()
+correct_counter = Counter()
 
 
 def start(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     logger.info(f"> Start chat #{chat_id}")
     welcome_text = "Hello!\nWelcome to the SuperDuperTriviaBot!"
+    questions_counter[chat_id], correct_counter[chat_id] = 0, 0
     topic_key = topic_keyboard()
     context.bot.send_message(chat_id=chat_id, text=welcome_text)
     topic_msg = "To play, pick a topic"
@@ -80,17 +83,23 @@ def noq_button(update: Update, context: CallbackContext):
     option = query.data
     chat_id = update.effective_chat.id
     players[chat_id]["noq"] = option
-    print(players[chat_id])
     if option == "noq_5":
         query.edit_message_text("Number of Questions: 5")
     elif option == "noq_10":
         query.edit_message_text("Number of Questions: 10")
     elif option == "noq_15":
         query.edit_message_text("Number of Questions: 15")
-    question_msg = "Question"
-    qa_key = question_answers_keyboard()
-    context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
 
+    topic = db_values[players[chat_id]["topic"]]
+    diff = db_values[players[chat_id]["difficulty"]]
+    noq = db_values[players[chat_id]["noq"]]
+
+    players[chat_id]["questions"] = db.get_list_of_questions(topic=topic, diff=diff, noq=noq)
+    logger.info("success to import questions from db")
+
+    question_msg = get_current_question(chat_id, context)
+    qa_key = question_answers_keyboard(chat_id)
+    context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
 
 
 def qa_button(update: Update, context: CallbackContext):
@@ -98,52 +107,48 @@ def qa_button(update: Update, context: CallbackContext):
     query.answer()
     option = query.data
     chat_id = update.effective_chat.id
-
-    if option == "qa_a":
-        query.edit_message_text("A")
-    elif option == "qa_b":
-        query.edit_message_text("B")
-    elif option == "qa_c":
-        query.edit_message_text("C")
-    elif option == "qa_d":
-        query.edit_message_text("D")
-
-    question_msg = "Question"
-    qa_key = question_answers_keyboard()
+    if option == "qa_correct":
+        correct_counter[chat_id] += 1
+        query.edit_message_text(f"Question Number {questions_counter[chat_id] + 1}: Correct! ✅")
+    else:
+        query.edit_message_text(f"Question Number {questions_counter[chat_id] + 1}: Wrong! ❌")
+    questions_counter[chat_id] += 1
+    question_msg = get_current_question(chat_id, context)
+    qa_key = question_answers_keyboard(chat_id)
     context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
 
 
-def get_questions_from_db():
-    # TODO : Build a query
-    pass
+def end_game(chat_id, context):
+    # TODO : update all-time-scoreboard
+    # TODO : End game msg (current game score)
+    chat_id = chat_id
+    context.bot.send_message(chat_id=chat_id, text=f"You got {correct_counter[chat_id]} questions right out of {questions_counter[chat_id]}!")
 
 
-def get_current_question():
-    # TODO : Separate question string, current answers, wrong answers from the Questions dict, update keyboard
-    pass
+def get_current_question(chat_id, context) -> str:
+    try:
+        return players[chat_id]["questions"][questions_counter[chat_id]]["question"]
+    except IndexError:
+        end_game(chat_id, context)
 
 
-def get_answer():
-    # TODO : Check if it correct, update score
-    pass
+def get_current_answers(chat_id):
+    answers = [[players[chat_id]["questions"][questions_counter[chat_id]]["correct_answer"], "qa_correct"],
+               [players[chat_id]["questions"][questions_counter[chat_id]]["incorrect_answers"][0], "qa_wrong1"],
+               [players[chat_id]["questions"][questions_counter[chat_id]]["incorrect_answers"][1], "qa_wrong2"],
+               [players[chat_id]["questions"][questions_counter[chat_id]]["incorrect_answers"][2], "qa_wrong3"]]
+    random.shuffle(answers)
+    return answers
 
-
-# def on_text(update: Update, context: CallbackContext):
-#     chat_id = update.effective_chat.id
-#     msg = update.message.text
-#     logger.info(f"+ Got #{chat_id}: {msg!r}")
-#     doc = db.add_item(chat_id, msg)
-#     response = f"Added {msg!r}, cart has {len(doc['items'])}."
-#     context.bot.send_message(chat_id=chat_id, text=response)
 
 def topic_keyboard():
     keyboard = [
-        [InlineKeyboardButton("Sports", callback_data=f"topic_sports"),
-         InlineKeyboardButton("History", callback_data=f"topic_history")],
-        [InlineKeyboardButton("Video Games", callback_data=f"topic_video_games"),
-         InlineKeyboardButton("General Knowledge", callback_data=f"topic_general")],
-        [InlineKeyboardButton("Music", callback_data=f"topic_music"),
-         InlineKeyboardButton("Geography", callback_data=f"topic_geo")],
+        [InlineKeyboardButton("⚽️ Sports ⚽️", callback_data=f"topic_sports"),
+         InlineKeyboardButton("🏛️ History 🏛️", callback_data=f"topic_history")],
+        [InlineKeyboardButton("🎮 Video Games 🎮", callback_data=f"topic_video_games"),
+         InlineKeyboardButton("🎰 General Knowledge 🎰", callback_data=f"topic_general")],
+        [InlineKeyboardButton("🎤 Music 🎤", callback_data=f"topic_music"),
+         InlineKeyboardButton("🌍 Geography 🌍", callback_data=f"topic_geo")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -166,13 +171,13 @@ def noq_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
-def question_answers_keyboard():
-    # TODO : Change A/B/C/D To dynamic
+def question_answers_keyboard(chat_id):
+    answers = get_current_answers(chat_id)
     keyboard = [
-        [InlineKeyboardButton("A", callback_data=f"qa_a")],
-        [InlineKeyboardButton("B", callback_data=f"qa_b")],
-        [InlineKeyboardButton("C", callback_data=f"qa_c")],
-        [InlineKeyboardButton("D", callback_data=f"qa_d")]]
+        [InlineKeyboardButton(answers[0][0], callback_data=answers[0][1])],
+        [InlineKeyboardButton(answers[1][0], callback_data=answers[1][1])],
+        [InlineKeyboardButton(answers[2][0], callback_data=answers[2][1])],
+        [InlineKeyboardButton(answers[3][0], callback_data=answers[3][1])]]
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -188,3 +193,11 @@ logger.info("* Start polling...")
 my_bot.start_polling()  # Starts polling in a background thread.
 my_bot.idle()  # Wait until Ctrl+C is pressed
 logger.info("* Bye!")
+
+# def on_text(update: Update, context: CallbackContext):
+#     chat_id = update.effective_chat.id
+#     msg = update.message.text
+#     logger.info(f"+ Got #{chat_id}: {msg!r}")
+#     doc = db.add_item(chat_id, msg)
+#     response = f"Added {msg!r}, cart has {len(doc['items'])}."
+#     context.bot.send_message(chat_id=chat_id, text=response)

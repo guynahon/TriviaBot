@@ -10,6 +10,7 @@ from telegram.ext import (
 )
 from collections import Counter
 import random
+import time
 
 db = Storage("Trivia")
 
@@ -23,6 +24,10 @@ logger = logging.getLogger(__name__)
 players = {}
 questions_counter = Counter()
 correct_counter = Counter()
+last_button_press_time_topic = {}
+last_button_press_time_diff = {}
+last_button_press_time_noq = {}
+last_button_press_time_q = {}
 
 
 def start(update: Update, context: CallbackContext):
@@ -41,6 +46,10 @@ def topic_button(update: Update, context: CallbackContext):
     query.answer()
     option = query.data
     chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_topic.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
     players[chat_id] = {}
     players[chat_id]["topic"] = option
     if option == "topic_sports":
@@ -58,6 +67,7 @@ def topic_button(update: Update, context: CallbackContext):
     diff_msg = "Choose difficulty"
     diff_key = difficulty_keyboard()
     context.bot.send_message(chat_id=chat_id, text=diff_msg, reply_markup=diff_key)
+    last_button_press_time_topic[chat_id] = current_time
 
 
 def difficulty_button(update: Update, context: CallbackContext):
@@ -113,23 +123,24 @@ def qa_button(update: Update, context: CallbackContext):
     else:
         query.edit_message_text(f"Question Number {questions_counter[chat_id] + 1}: Wrong! ❌")
     questions_counter[chat_id] += 1
-    question_msg = get_current_question(chat_id, context)
-    qa_key = question_answers_keyboard(chat_id)
-    context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
+    if questions_counter[chat_id] < db_values[players[chat_id]["noq"]]:
+        question_msg = get_current_question(chat_id, context)
+        qa_key = question_answers_keyboard(chat_id)
+        context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
+    else:
+        end_game(chat_id, context, update)
 
 
-def end_game(chat_id, context):
+def end_game(chat_id, context, update):
     # TODO : update all-time-scoreboard
-    # TODO : End game msg (current game score)
-    chat_id = chat_id
-    context.bot.send_message(chat_id=chat_id, text=f"You got {correct_counter[chat_id]} questions right out of {questions_counter[chat_id]}!")
+    context.bot.send_message(chat_id=chat_id,
+                             text=f"You got {correct_counter[chat_id]} questions right out of {questions_counter[chat_id]}!")
+    db.update_alltime_scoreboard(chat_id=chat_id, correct_answers=correct_counter[chat_id],
+                                 noq=questions_counter[chat_id], user_data=update.effective_user)
 
 
 def get_current_question(chat_id, context) -> str:
-    try:
-        return players[chat_id]["questions"][questions_counter[chat_id]]["question"]
-    except IndexError:
-        end_game(chat_id, context)
+    return players[chat_id]["questions"][questions_counter[chat_id]]["question"]
 
 
 def get_current_answers(chat_id):
@@ -146,7 +157,7 @@ def topic_keyboard():
         [InlineKeyboardButton("⚽️ Sports ⚽️", callback_data=f"topic_sports"),
          InlineKeyboardButton("🏛️ History 🏛️", callback_data=f"topic_history")],
         [InlineKeyboardButton("🎮 Video Games 🎮", callback_data=f"topic_video_games"),
-         InlineKeyboardButton("🎰 General Knowledge 🎰", callback_data=f"topic_general")],
+         InlineKeyboardButton("🎰 General 🎰", callback_data=f"topic_general")],
         [InlineKeyboardButton("🎤 Music 🎤", callback_data=f"topic_music"),
          InlineKeyboardButton("🌍 Geography 🌍", callback_data=f"topic_geo")],
     ]

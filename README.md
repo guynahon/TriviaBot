@@ -1,19 +1,23 @@
-# 🚧 YOUR BOT NAME HERE
+# Super Duper Trivia Bot
 
 ## The Team
-- 🚧 Participant 1 Name
-- 🚧 Participant 2 Name
-- 🚧 Participant 3 Name
+- Guy Nahon
+- Dor Matania
+- Aysel Yarahmedov
 
 ## About this bot
 
-🚧 ENTER DESCRIPTION HERE
+Super Duper Trivia Bot is an interactive bot by Super Duper Team!
+Using this bot you can challenge yourself with varying difficulty levels and categories.
+Our bot will keep score of right answers in this game and all games to come together.
 
-🚧 YOU CAN ADD A t.me LINK TO THE BOT HERE
+t.me/super_duper_trivia_bot
+
 
 🚧 ADD SCREENSHOTS/GIFS/SCREENCAST HERE (REFER TO MARKDOWN'S SYNTAX FOR HELP ON DISPLAYING IMAGES)
 
 🚧 ADD ANY OTHER NOTES REGARDING THE BOT
+
  
 ## Instructions for Developers 
 ### Prerequisites

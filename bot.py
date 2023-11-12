@@ -75,6 +75,10 @@ def difficulty_button(update: Update, context: CallbackContext):
     query.answer()
     option = query.data
     chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_diff.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
     players[chat_id]["difficulty"] = option
     if option == "diff_easy":
         query.edit_message_text("Difficulty: Easy")
@@ -85,6 +89,7 @@ def difficulty_button(update: Update, context: CallbackContext):
     noq_msg = "Choose number of questions"
     noq_key = noq_keyboard()
     context.bot.send_message(chat_id=chat_id, text=noq_msg, reply_markup=noq_key)
+    last_button_press_time_diff[chat_id] = current_time
 
 
 def noq_button(update: Update, context: CallbackContext):
@@ -92,6 +97,10 @@ def noq_button(update: Update, context: CallbackContext):
     query.answer()
     option = query.data
     chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_noq.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
     players[chat_id]["noq"] = option
     if option == "noq_5":
         query.edit_message_text("Number of Questions: 5")
@@ -110,13 +119,17 @@ def noq_button(update: Update, context: CallbackContext):
     question_msg = get_current_question(chat_id, context)
     qa_key = question_answers_keyboard(chat_id)
     context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
-
+    last_button_press_time_noq[chat_id] = current_time
 
 def qa_button(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
     option = query.data
     chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_q.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
     if option == "qa_correct":
         correct_counter[chat_id] += 1
         query.edit_message_text(f"Question Number {questions_counter[chat_id] + 1}: Correct! ✅")
@@ -129,6 +142,7 @@ def qa_button(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
     else:
         end_game(chat_id, context, update)
+    last_button_press_time_q[chat_id] = current_time
 
 
 def end_game(chat_id, context, update):

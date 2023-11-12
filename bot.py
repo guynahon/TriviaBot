@@ -2,7 +2,7 @@ import logging
 import bot_settings
 from DB.parameters_dictionary import db_values as db_values
 from storage import Storage
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import (
     CommandHandler,
     CallbackContext,
@@ -11,7 +11,6 @@ from telegram.ext import (
 from collections import Counter
 import random
 import time
-from telegram import ParseMode
 
 db = Storage("Trivia")
 

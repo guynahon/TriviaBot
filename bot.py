@@ -11,6 +11,7 @@ from telegram.ext import (
 from collections import Counter
 import random
 import time
+from telegram import ParseMode
 
 db = Storage("Trivia")
 

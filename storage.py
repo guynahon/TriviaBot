@@ -46,4 +46,15 @@ class Storage:
 
     def get_leaderboard(self):
         sort_criteria = [("correct_answers", -1)]
-        self.users
+        result = self.users.find().sort(sort_criteria).limit(5)
+        output = "🏆 Leaderboard 🏆\n"
+        for i, line in enumerate(result, 1):
+            if i == 1:
+                output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]} 🥇\n'
+            elif i == 2:
+                output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]} 🥈\n'
+            elif i == 3:
+                output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]} 🥉\n'
+            else:
+                output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]}\n'
+        return output

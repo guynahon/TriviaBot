@@ -49,16 +49,20 @@ def score(update: Update, context: CallbackContext):
 
 def leaderboard(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
-    logger.info(f"> Start chat #{chat_id}")
-    welcome_text = "Hello!\nWelcome to the SuperDuperTriviaBot!"
-    context.bot.send_message(chat_id=chat_id, text=welcome_text)
+    logger.info(f"> Getting leaderboard #{chat_id}")
+    context.bot.send_message(chat_id=chat_id, text=db.get_leaderboard())
 
 
 def rules(update: Update, context: CallbackContext):
+    user = update.effective_user
     chat_id = update.effective_chat.id
-    logger.info(f"> Start chat #{chat_id}")
-    welcome_text = "Hello!\nWelcome to the SuperDuperTriviaBot!"
-    context.bot.send_message(chat_id=chat_id, text=welcome_text)
+    logger.info(f"> Start rules #{chat_id}")
+    rules_text = (f"Hello {user.first_name}!\n"
+                  f"/start -> to start a new game.\n"
+                  "/score -> to get your score statistics.\n"
+                  "/leaderboard -> to see the top 5 leading players.\n"
+                  "just pick a topic, difficulty and number of questions and start playing!")
+    context.bot.send_message(chat_id=chat_id, text=rules_text)
 
 
 def topic_button(update: Update, context: CallbackContext):

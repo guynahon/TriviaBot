@@ -41,6 +41,26 @@ def start(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=chat_id, text=topic_msg, reply_markup=topic_key)
 
 
+def score(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    logger.info(f"> Getting score #{chat_id}")
+    context.bot.send_message(chat_id=chat_id, text=db.get_score(chat_id))
+
+
+def leaderboard(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    logger.info(f"> Start chat #{chat_id}")
+    welcome_text = "Hello!\nWelcome to the SuperDuperTriviaBot!"
+    context.bot.send_message(chat_id=chat_id, text=welcome_text)
+
+
+def rules(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    logger.info(f"> Start chat #{chat_id}")
+    welcome_text = "Hello!\nWelcome to the SuperDuperTriviaBot!"
+    context.bot.send_message(chat_id=chat_id, text=welcome_text)
+
+
 def topic_button(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
@@ -120,6 +140,7 @@ def noq_button(update: Update, context: CallbackContext):
     qa_key = question_answers_keyboard(chat_id)
     context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
     last_button_press_time_noq[chat_id] = current_time
+
 
 def qa_button(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -208,7 +229,9 @@ def question_answers_keyboard(chat_id):
 
 my_bot = Updater(token=bot_settings.TOKEN, use_context=True)
 my_bot.dispatcher.add_handler(CommandHandler("start", start))
-# my_bot.dispatcher.add_handler(MessageHandler(Filters.text, on_text))
+my_bot.dispatcher.add_handler(CommandHandler("score", score))
+my_bot.dispatcher.add_handler(CommandHandler("leaderboard", leaderboard))
+my_bot.dispatcher.add_handler(CommandHandler("rules", rules))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(topic_button, pattern="^topic_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(difficulty_button, pattern="^diff_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(noq_button, pattern="^noq_"))
@@ -218,11 +241,3 @@ logger.info("* Start polling...")
 my_bot.start_polling()  # Starts polling in a background thread.
 my_bot.idle()  # Wait until Ctrl+C is pressed
 logger.info("* Bye!")
-
-# def on_text(update: Update, context: CallbackContext):
-#     chat_id = update.effective_chat.id
-#     msg = update.message.text
-#     logger.info(f"+ Got #{chat_id}: {msg!r}")
-#     doc = db.add_item(chat_id, msg)
-#     response = f"Added {msg!r}, cart has {len(doc['items'])}."
-#     context.bot.send_message(chat_id=chat_id, text=response)

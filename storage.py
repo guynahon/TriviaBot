@@ -22,7 +22,7 @@ class Storage:
 
     def update_alltime_scoreboard(self, chat_id, correct_answers, noq, user_data):
         filter_criteria = {"chat_id": chat_id, "user_name": user_data["full_name"], "correct_answers": correct_answers,
-                           "total_questions": noq, "games_played": 1}
+                           "total_questions": noq, "games_played": 1, "user_level": 1}
         query = {"chat_id": chat_id}
         user_line = self.users.find_one(query)
         if user_line is None:
@@ -42,7 +42,7 @@ class Storage:
             return f"Play at least once to get a score!"
         return (f"Your total answered question number is: {user_line['correct_answers']} "
                 f"out of {user_line['total_questions']}\nYour correct percentage is "
-                f"{(user_line['correct_answers']/user_line['total_questions'])*100}%")
+                f"{(user_line['correct_answers'] / user_line['total_questions']) * 100}%")
 
     def get_leaderboard(self):
         sort_criteria = [("correct_answers", -1)]
@@ -58,3 +58,11 @@ class Storage:
             else:
                 output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]}\n'
         return output
+
+    def check_user_level(self, chat_id):
+        query = {"chat_id": chat_id}
+        user_line = self.users.find_one(query)
+        if user_line is None:
+            return 1
+        return user_line["user_level"]
+

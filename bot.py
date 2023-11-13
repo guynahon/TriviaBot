@@ -1,6 +1,7 @@
 import logging
 import bot_settings
 from DB.parameters_dictionary import db_values as db_values
+from DB.parameters_dictionary import add_values as add_values
 from storage import Storage
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import (
@@ -28,6 +29,7 @@ last_button_press_time_topic = {}
 last_button_press_time_diff = {}
 last_button_press_time_noq = {}
 last_button_press_time_q = {}
+question_adder = {"chat": False}
 
 
 def start(update: Update, context: CallbackContext):
@@ -203,6 +205,27 @@ def topic_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
+def add_question_topic_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("⚽️ Sports ⚽️", callback_data=f"add_topic_sports"),
+         InlineKeyboardButton("🏛️ History 🏛️", callback_data=f"add_topic_history")],
+        [InlineKeyboardButton("🎮 Video Games 🎮", callback_data=f"add_topic_video_games"),
+         InlineKeyboardButton("🎰 General 🎰", callback_data=f"add_topic_general")],
+        [InlineKeyboardButton("🎤 Music 🎤", callback_data=f"add_topic_music"),
+         InlineKeyboardButton("🌍 Geography 🌍", callback_data=f"add_topic_geo")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def add_difficulty_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("Easy", callback_data=f"add_diff_easy"),
+         InlineKeyboardButton("Medium", callback_data=f"add_diff_medium"),
+         InlineKeyboardButton("Hard", callback_data=f"add_diff_hard")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
 def difficulty_keyboard():
     keyboard = [
         [InlineKeyboardButton("Easy", callback_data=f"diff_easy"),
@@ -231,16 +254,112 @@ def question_answers_keyboard(chat_id):
     return InlineKeyboardMarkup(keyboard)
 
 
+def add_question(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    text = "Choose a topic: "
+    context.bot.send_message(chat_id=chat_id, reply_markup=add_question_topic_keyboard(), text=text)
+
+
+def add_topic_button(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    option = query.data
+    chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_q.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
+    if db.check_user_level(chat_id) == 2:
+        question_adder["topic"] = add_values[option]
+        if option == "add_topic_sports":
+            query.edit_message_text("Topic: Sports")
+        elif option == "add_topic_history":
+            query.edit_message_text("Topic: History")
+        elif option == "add_topic_video_games":
+            query.edit_message_text("Topic: Video Games")
+        elif option == "add_topic_general":
+            query.edit_message_text("Topic: General Knowledge")
+        elif option == "add_topic_music":
+            query.edit_message_text("Topic: Music")
+        elif option == "add_topic_geo":
+            query.edit_message_text("Topic: Geography")
+        context.bot.send_message(chat_id=chat_id, reply_markup=add_difficulty_keyboard(), text="Choose difficulty")
+    elif db.check_user_level(chat_id) == 1:
+        logger.info("Not Authorized")
+        query.edit_message_text(f"❌ You don't have the permission to add a questions ❌")
+
+
+def add_difficulty_button(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    option = query.data
+    question_adder["difficulty"] = add_values[option]
+    question_adder["chat"] = True
+    question_adder["counter"] = 0
+    question_adder["incorrect_answers"] = []
+    chat_id = update.effective_chat.id
+    current_time = time.time()
+    last_press_time = last_button_press_time_diff.get(chat_id, 0)
+    if current_time - last_press_time < 1.3:
+        return
+    if option == "add_diff_easy":
+        query.edit_message_text("Difficulty: Easy")
+    elif option == "add_diff_medium":
+        query.edit_message_text("Difficulty: Medium")
+    elif option == "add_diff_hard":
+        query.edit_message_text("Difficulty: Hard")
+    last_button_press_time_diff[chat_id] = current_time
+    context.bot.send_message(chat_id=chat_id, text="Enter a question")
+
+
+def respond(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    text = update.message.text
+    logger.info(f"Getting question from user #{chat_id}: {text!r}")
+
+    if question_adder["chat"] and question_adder["counter"] < 5:
+
+        if question_adder["counter"] == 0:
+            question_adder["question"] = text
+            context.bot.send_message(chat_id=chat_id, text="Enter the correct answer")
+
+        elif question_adder["counter"] == 1:
+            context.bot.send_message(chat_id=chat_id, text="Enter the Incorrect answer")
+            question_adder["correct_answer"] = text
+
+        elif question_adder["counter"] == 4:
+            question_adder["incorrect_answers"].append(text)
+            db.add_question_to_db(question_adder)
+            logger.info("Added Question to DB")
+
+        else:
+            question_adder["incorrect_answers"].append(text)
+            context.bot.send_message(chat_id=chat_id, text="Enter the Incorrect answer")
+
+        question_adder["counter"] += 1
+
+        if question_adder["counter"] == 5:
+            question_adder["chat"] = False
+            logger.info("Finished to get data from user")
+
+    else:
+        context.bot.send_message(chat_id=chat_id, text="Can not enter values.")
+
+
+
 my_bot = Updater(token=bot_settings.TOKEN, use_context=True)
 my_bot.dispatcher.add_handler(CommandHandler("start", start))
 my_bot.dispatcher.add_handler(CommandHandler("score", score))
 my_bot.dispatcher.add_handler(CommandHandler("leaderboard", leaderboard))
 my_bot.dispatcher.add_handler(CommandHandler("rules", rules))
+my_bot.dispatcher.add_handler(CommandHandler("add_question", add_question))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(topic_button, pattern="^topic_"))
+my_bot.dispatcher.add_handler(CallbackQueryHandler(add_topic_button, pattern="^add_topic_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(difficulty_button, pattern="^diff_"))
+my_bot.dispatcher.add_handler(CallbackQueryHandler(add_difficulty_button, pattern="^add_diff_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(noq_button, pattern="^noq_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(qa_button, pattern="^qa_"))
-
+my_bot.dispatcher.add_handler(MessageHandler(Filters.text, respond))
 logger.info("* Start polling...")
 my_bot.start_polling()  # Starts polling in a background thread.
 my_bot.idle()  # Wait until Ctrl+C is pressed

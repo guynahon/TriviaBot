@@ -10,6 +10,7 @@ class Storage:
         self.db = client.get_database(db_name)
         self.users = self.db.get_collection("Users")
         self.questions = self.db.get_collection("Questions")
+        self.add_q = self.db.get_collection("new_q")
 
     def get_list_of_questions(self, topic, diff, noq):
         lst_of_questions = []
@@ -22,7 +23,7 @@ class Storage:
 
     def update_alltime_scoreboard(self, chat_id, correct_answers, noq, user_data):
         filter_criteria = {"chat_id": chat_id, "user_name": user_data["full_name"], "correct_answers": correct_answers,
-                           "total_questions": noq, "games_played": 1}
+                           "total_questions": noq, "games_played": 1, "user_level": 1}
         query = {"chat_id": chat_id}
         user_line = self.users.find_one(query)
         if user_line is None:
@@ -42,7 +43,7 @@ class Storage:
             return f"Play at least once to get a score!"
         return (f"Your total answered question number is: {user_line['correct_answers']} "
                 f"out of {user_line['total_questions']}\nYour correct percentage is "
-                f"{(user_line['correct_answers']/user_line['total_questions'])*100}%")
+                f"{(user_line['correct_answers'] / user_line['total_questions']) * 100}%")
 
     def get_leaderboard(self):
         sort_criteria = [("correct_answers", -1)]
@@ -58,3 +59,26 @@ class Storage:
             else:
                 output += f'{i}. {line["user_name"]}, Score: {line["correct_answers"]}\n'
         return output
+
+    def check_user_level(self, chat_id):
+        query = {"chat_id": chat_id}
+        user_line = self.users.find_one(query)
+        if user_line is None:
+            return 1
+        return user_line["user_level"]
+
+    def add_question_to_db(self, question_adder):
+        topic = question_adder["topic"]
+        diff = question_adder["difficulty"]
+        question = question_adder["question"]
+        correct = question_adder["correct_answer"]
+        incorrect = question_adder["incorrect_answers"]
+        question_to_db = {
+            "category": topic,
+            "type": "multiple",
+            "difficulty": diff,
+            "question": question,
+            "correct_answer": correct,
+            "incorrect_answers": incorrect
+        }
+        self.add_q.insert_one(question_to_db)

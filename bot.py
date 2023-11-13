@@ -286,7 +286,7 @@ def add_topic_button(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=chat_id, reply_markup=add_difficulty_keyboard(), text="Choose difficulty")
     elif db.check_user_level(chat_id) == 1:
         logger.info("Not Authorized")
-        query.edit_message_text(f"❌ You dont have the correct authorization to add questions ❌")
+        query.edit_message_text(f"❌ You don't have the permission to add a questions ❌")
 
 
 def add_difficulty_button(update: Update, context: CallbackContext):

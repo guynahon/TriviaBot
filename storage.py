@@ -10,6 +10,7 @@ class Storage:
         self.db = client.get_database(db_name)
         self.users = self.db.get_collection("Users")
         self.questions = self.db.get_collection("Questions")
+        self.add_q = self.db.get_collection("new_q")
 
     def get_list_of_questions(self, topic, diff, noq):
         lst_of_questions = []
@@ -66,3 +67,18 @@ class Storage:
             return 1
         return user_line["user_level"]
 
+    def add_question_to_db(self, question_adder):
+        topic = question_adder["topic"]
+        diff = question_adder["difficulty"]
+        question = question_adder["question"]
+        correct = question_adder["correct_answer"]
+        incorrect = question_adder["incorrect_answers"]
+        question_to_db = {
+            "category": topic,
+            "type": "multiple",
+            "difficulty": diff,
+            "question": question,
+            "correct_answer": correct,
+            "incorrect_answers": incorrect
+        }
+        self.add_q.insert_one(question_to_db)

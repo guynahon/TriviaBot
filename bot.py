@@ -318,25 +318,33 @@ def respond(update: Update, context: CallbackContext):
     logger.info(f"Getting question from user #{chat_id}: {text!r}")
 
     if question_adder["chat"] and question_adder["counter"] < 5:
+
         if question_adder["counter"] == 0:
             question_adder["question"] = text
             context.bot.send_message(chat_id=chat_id, text="Enter the correct answer")
+
         elif question_adder["counter"] == 1:
             context.bot.send_message(chat_id=chat_id, text="Enter the Incorrect answer")
             question_adder["correct_answer"] = text
+
+        elif question_adder["counter"] == 4:
+            question_adder["incorrect_answers"].append(text)
+            db.add_question_to_db(question_adder)
+            logger.info("Added Question to DB")
+
         else:
             question_adder["incorrect_answers"].append(text)
-
             context.bot.send_message(chat_id=chat_id, text="Enter the Incorrect answer")
+
         question_adder["counter"] += 1
+
         if question_adder["counter"] == 5:
             question_adder["chat"] = False
             logger.info("Finished to get data from user")
-    if len(question_adder["incorrect_answers"]) == 3:
-    # TODO : Send data to DB and create a query
 
     else:
         context.bot.send_message(chat_id=chat_id, text="Can not enter values.")
+
 
 
 my_bot = Updater(token=bot_settings.TOKEN, use_context=True)

@@ -73,6 +73,7 @@ def rules(update: Update, context: CallbackContext):
         f"*/start* -> to start a new game.\n"
         "*/score* -> to get your score statistics.\n"
         "*/leaderboard* -> to see the top 5 leading players.\n"
+        "*/add_question* -> add a new question to the database (if you're an admin!).\n"
         "*just pick a topic, difficulty and number of questions and start playing!*"
     )
     context.bot.send_message(
@@ -417,13 +418,9 @@ my_bot.dispatcher.add_handler(CommandHandler("leaderboard", leaderboard))
 my_bot.dispatcher.add_handler(CommandHandler("rules", rules))
 my_bot.dispatcher.add_handler(CommandHandler("add_question", add_question))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(topic_button, pattern="^topic_"))
-my_bot.dispatcher.add_handler(
-    CallbackQueryHandler(add_topic_button, pattern="^add_topic_")
-)
+my_bot.dispatcher.add_handler(CallbackQueryHandler(add_topic_button, pattern="^add_topic_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(difficulty_button, pattern="^diff_"))
-my_bot.dispatcher.add_handler(
-    CallbackQueryHandler(add_difficulty_button, pattern="^add_diff_")
-)
+my_bot.dispatcher.add_handler(CallbackQueryHandler(add_difficulty_button, pattern="^add_diff_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(noq_button, pattern="^noq_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(qa_button, pattern="^qa_"))
 my_bot.dispatcher.add_handler(MessageHandler(Filters.text, respond))

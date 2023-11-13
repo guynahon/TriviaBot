@@ -376,7 +376,7 @@ def respond(update: Update, context: CallbackContext):
             context.bot.send_message(chat_id=chat_id, text="Enter the correct answer")
 
         elif question_adder["counter"] == 1:
-            context.bot.send_message(chat_id=chat_id, text="Enter the Incorrect answer")
+            context.bot.send_message(chat_id=chat_id, text="Enter an Incorrect answer")
             question_adder["correct_answer"] = text
 
         elif question_adder["counter"] == 4:

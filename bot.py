@@ -76,9 +76,7 @@ def rules(update: Update, context: CallbackContext):
         "*/add_question* -> add a new question to the database (if you're an admin!).\n"
         "*just pick a topic, difficulty and number of questions and start playing!*"
     )
-    context.bot.send_message(
-        chat_id=chat_id, text=rules_text, parse_mode=ParseMode.MARKDOWN
-    )
+    context.bot.send_message(chat_id=chat_id, text=rules_text, parse_mode=ParseMode.MARKDOWN)
 
 
 def topic_button(update: Update, context: CallbackContext):
@@ -153,9 +151,7 @@ def noq_button(update: Update, context: CallbackContext):
     diff = db_values[players[chat_id]["difficulty"]]
     noq = db_values[players[chat_id]["noq"]]
 
-    players[chat_id]["questions"] = db.get_list_of_questions(
-        topic=topic, diff=diff, noq=noq
-    )
+    players[chat_id]["questions"] = db.get_list_of_questions(topic=topic, diff=diff, noq=noq)
     logger.info("success to import questions from db")
 
     question_msg = get_current_question(chat_id, context)
@@ -175,9 +171,7 @@ def qa_button(update: Update, context: CallbackContext):
         return
     if option == "qa_correct":
         correct_counter[chat_id] += 1
-        query.edit_message_text(
-            f"Question Number {questions_counter[chat_id] + 1}: Correct! ✅"
-        )
+        query.edit_message_text(f"Question Number {questions_counter[chat_id] + 1}: Correct! ✅")
     else:
         query.edit_message_text(
             f"Question Number {questions_counter[chat_id] + 1}: Wrong! ❌\n"
@@ -188,16 +182,13 @@ def qa_button(update: Update, context: CallbackContext):
     if questions_counter[chat_id] < db_values[players[chat_id]["noq"]]:
         question_msg = get_current_question(chat_id, context)
         qa_key = question_answers_keyboard(chat_id)
-        context.bot.send_message(
-            chat_id=chat_id, text=question_msg, reply_markup=qa_key
-        )
+        context.bot.send_message(chat_id=chat_id, text=question_msg, reply_markup=qa_key)
     else:
         end_game(chat_id, context, update)
     last_button_press_time_q[chat_id] = current_time
 
 
 def end_game(chat_id, context, update):
-    # TODO : update all-time-scoreboard
     context.bot.send_message(
         chat_id=chat_id,
         text=f"*You got {correct_counter[chat_id]} questions right out of {questions_counter[chat_id]}!*",
@@ -284,9 +275,7 @@ def question_answers_keyboard(chat_id):
 def add_question(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     text = "Choose a topic: "
-    context.bot.send_message(
-        chat_id=chat_id, reply_markup=add_question_topic_keyboard(), text=text
-    )
+    context.bot.send_message(chat_id=chat_id, reply_markup=add_question_topic_keyboard(), text=text)
 
 
 def add_topic_button(update: Update, context: CallbackContext):

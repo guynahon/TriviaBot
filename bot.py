@@ -42,7 +42,9 @@ def start(update: Update, context: CallbackContext):
     questions_counter[chat_id], correct_counter[chat_id] = 0, 0
     players[chat_id] = {"correct_one": ""}
     topic_key = topic_keyboard()
-    context.bot.send_message(chat_id=chat_id, text=welcome_text, parse_mode=ParseMode.MARKDOWN)
+    context.bot.send_message(
+        chat_id=chat_id, text=welcome_text, parse_mode=ParseMode.MARKDOWN
+    )
     topic_msg = "To play, pick a topic"
     context.bot.send_message(chat_id=chat_id, text=topic_msg, reply_markup=topic_key)
 
@@ -50,13 +52,16 @@ def start(update: Update, context: CallbackContext):
 def score(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     logger.info(f"> Getting score #{chat_id}")
-    context.bot.send_message(chat_id=chat_id, text=db.get_score(chat_id), parse_mode=ParseMode.MARKDOWN)
+    context.bot.send_message(
+        chat_id=chat_id, text=db.get_score(chat_id), parse_mode=ParseMode.MARKDOWN
+    )
 
 
 def leaderboard(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     logger.info(f"> Getting leaderboard #{chat_id}")
-    context.bot.send_message(chat_id=chat_id, text=db.get_leaderboard(), parse_mode=ParseMode.MARKDOWN)
+    context.bot.send_message(
+        chat_id=chat_id, text=db.get_leaderboard(), parse_mode=ParseMode.MARKDOWN)
 
 
 def rules(update: Update, context: CallbackContext):
@@ -70,7 +75,9 @@ def rules(update: Update, context: CallbackContext):
         "*/leaderboard* -> to see the top 5 leading players.\n"
         "*just pick a topic, difficulty and number of questions and start playing!*"
     )
-    context.bot.send_message(chat_id=chat_id, text=rules_text, parse_mode=ParseMode.MARKDOWN)
+    context.bot.send_message(
+        chat_id=chat_id, text=rules_text, parse_mode=ParseMode.MARKDOWN
+    )
 
 
 def topic_button(update: Update, context: CallbackContext):
@@ -173,7 +180,8 @@ def qa_button(update: Update, context: CallbackContext):
     else:
         query.edit_message_text(
             f"Question Number {questions_counter[chat_id] + 1}: Wrong! ❌\n"
-            f"*The correct answer is: {players[chat_id]['correct_one']}*", parse_mode=ParseMode.MARKDOWN
+            f"*The correct answer is: {players[chat_id]['correct_one']}*",
+            parse_mode=ParseMode.MARKDOWN,
         )
     questions_counter[chat_id] += 1
     if questions_counter[chat_id] < db_values[players[chat_id]["noq"]]:
@@ -192,7 +200,7 @@ def end_game(chat_id, context, update):
     context.bot.send_message(
         chat_id=chat_id,
         text=f"*You got {correct_counter[chat_id]} questions right out of {questions_counter[chat_id]}!*",
-        parse_mode=ParseMode.MARKDOWN
+        parse_mode=ParseMode.MARKDOWN,
     )
     db.update_alltime_scoreboard(
         chat_id=chat_id,
@@ -236,27 +244,6 @@ def topic_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
-def add_question_topic_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("⚽️ Sports ⚽️", callback_data=f"add_topic_sports"),
-         InlineKeyboardButton("🏛️ History 🏛️", callback_data=f"add_topic_history")],
-        [InlineKeyboardButton("🎮 Video Games 🎮", callback_data=f"add_topic_video_games"),
-         InlineKeyboardButton("🎰 General 🎰", callback_data=f"add_topic_general")],
-        [InlineKeyboardButton("🎤 Music 🎤", callback_data=f"add_topic_music"),
-         InlineKeyboardButton("🌍 Geography 🌍", callback_data=f"add_topic_geo")],
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
-def add_difficulty_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("Easy", callback_data=f"add_diff_easy"),
-         InlineKeyboardButton("Medium", callback_data=f"add_diff_medium"),
-         InlineKeyboardButton("Hard", callback_data=f"add_diff_hard")],
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
 def difficulty_keyboard():
     keyboard = [
         [
@@ -296,7 +283,9 @@ def question_answers_keyboard(chat_id):
 def add_question(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     text = "Choose a topic: "
-    context.bot.send_message(chat_id=chat_id, reply_markup=add_question_topic_keyboard(), text=text)
+    context.bot.send_message(
+        chat_id=chat_id, reply_markup=add_question_topic_keyboard(), text=text
+    )
 
 
 def add_topic_button(update: Update, context: CallbackContext):
@@ -322,7 +311,11 @@ def add_topic_button(update: Update, context: CallbackContext):
             query.edit_message_text("Topic: Music")
         elif option == "add_topic_geo":
             query.edit_message_text("Topic: Geography")
-        context.bot.send_message(chat_id=chat_id, reply_markup=add_difficulty_keyboard(), text="Choose difficulty")
+        context.bot.send_message(
+            chat_id=chat_id,
+            reply_markup=add_difficulty_keyboard(),
+            text="Choose difficulty",
+        )
     elif db.check_user_level(chat_id) == 1:
         logger.info("Not Authorized")
         query.edit_message_text(f"❌ You don't have the permission to add a questions ❌")
@@ -351,13 +344,43 @@ def add_difficulty_button(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=chat_id, text="Enter a question")
 
 
+def add_question_topic_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton("⚽️ Sports ⚽️", callback_data=f"add_topic_sports"),
+            InlineKeyboardButton("🏛️ History 🏛️", callback_data=f"add_topic_history"),
+        ],
+        [
+            InlineKeyboardButton(
+                "🎮 Video Games 🎮", callback_data=f"add_topic_video_games"
+            ),
+            InlineKeyboardButton("🎰 General 🎰", callback_data=f"add_topic_general"),
+        ],
+        [
+            InlineKeyboardButton("🎤 Music 🎤", callback_data=f"add_topic_music"),
+            InlineKeyboardButton("🌍 Geography 🌍", callback_data=f"add_topic_geo"),
+        ],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def add_difficulty_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton("Easy", callback_data=f"add_diff_easy"),
+            InlineKeyboardButton("Medium", callback_data=f"add_diff_medium"),
+            InlineKeyboardButton("Hard", callback_data=f"add_diff_hard"),
+        ],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
 def respond(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     text = update.message.text
     logger.info(f"Getting question from user #{chat_id}: {text!r}")
 
     if question_adder["chat"] and question_adder["counter"] < 5:
-
         if question_adder["counter"] == 0:
             question_adder["question"] = text
             context.bot.send_message(chat_id=chat_id, text="Enter the correct answer")
@@ -368,6 +391,8 @@ def respond(update: Update, context: CallbackContext):
 
         elif question_adder["counter"] == 4:
             question_adder["incorrect_answers"].append(text)
+            context.bot.send_message(chat_id=chat_id, text="*Question added to database!*",
+                                     parse_mode=ParseMode.MARKDOWN)
             db.add_question_to_db(question_adder)
             logger.info("Added Question to DB")
 
@@ -385,7 +410,6 @@ def respond(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=chat_id, text="Can not enter values.")
 
 
-
 my_bot = Updater(token=bot_settings.TOKEN, use_context=True)
 my_bot.dispatcher.add_handler(CommandHandler("start", start))
 my_bot.dispatcher.add_handler(CommandHandler("score", score))
@@ -393,9 +417,13 @@ my_bot.dispatcher.add_handler(CommandHandler("leaderboard", leaderboard))
 my_bot.dispatcher.add_handler(CommandHandler("rules", rules))
 my_bot.dispatcher.add_handler(CommandHandler("add_question", add_question))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(topic_button, pattern="^topic_"))
-my_bot.dispatcher.add_handler(CallbackQueryHandler(add_topic_button, pattern="^add_topic_"))
+my_bot.dispatcher.add_handler(
+    CallbackQueryHandler(add_topic_button, pattern="^add_topic_")
+)
 my_bot.dispatcher.add_handler(CallbackQueryHandler(difficulty_button, pattern="^diff_"))
-my_bot.dispatcher.add_handler(CallbackQueryHandler(add_difficulty_button, pattern="^add_diff_"))
+my_bot.dispatcher.add_handler(
+    CallbackQueryHandler(add_difficulty_button, pattern="^add_diff_")
+)
 my_bot.dispatcher.add_handler(CallbackQueryHandler(noq_button, pattern="^noq_"))
 my_bot.dispatcher.add_handler(CallbackQueryHandler(qa_button, pattern="^qa_"))
 my_bot.dispatcher.add_handler(MessageHandler(Filters.text, respond))

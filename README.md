@@ -14,19 +14,24 @@ Our bot will keep score of right answers in this game and all games to come toge
 t.me/super_duper_trivia_bot
 
 Bot intro:
-![bot_intro](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/ba922ffe-b324-4cb4-94d8-2c93c8fd2077)
+
+![bot_intro copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/dff9d0b2-1270-4308-a691-c0a507caba62)
 
 Bot start:
-![bot_start](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/5163cac9-5144-4b8c-aebd-ad18cc0732a5)
+
+![bot_start copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/9b188228-91d6-4114-81ac-3b33445682e4)
 
 Bot rules:
-![bot_rules_score](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/ab486c41-0425-4081-b555-58d313111d69)
+
+![bot_rules_score copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/baeedc0e-7d62-4494-9810-13b7848d201a)
 
 Bot leaderboard:
-![bot_leaderboard](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/36f3f056-ce2a-4a34-a386-16cf8ca444fa)
+
+![bot_leaderboard copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/5f138512-95c2-4cdf-b492-7118fff2e00b)
 
 Bot menu:
-![bot_menu](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/a83ff261-de38-4a61-862a-4cc46a833ba9)
+
+![bot_menu copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/66c797e9-56b9-450d-83a8-941b63d16cc9)
 
 
 

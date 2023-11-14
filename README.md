@@ -33,7 +33,7 @@ Question examples:
 
 Bot rules:
 
-![bot_rules_score copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/baeedc0e-7d62-4494-9810-13b7848d201a)
+![rules](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/723d33bf-c07c-407b-b5bb-e134a78324d7)
 
 Bot leaderboard:
 
@@ -51,7 +51,10 @@ Add Question without authorization:
 
 Bot menu:
 
-![bot_menu copy](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/66c797e9-56b9-450d-83a8-941b63d16cc9)
+![menu](https://github.com/grurniClasses/telegram-bot-hackathon-superduperteam/assets/143611810/c1215b3c-ae4d-48f6-bf37-3edde4977d00)
+
+
+
 
 
 

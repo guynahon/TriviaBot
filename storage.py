@@ -44,7 +44,7 @@ class Storage:
 
         return (f"Your total answered question number is: *{user_line['correct_answers']} "
                 f"out of {user_line['total_questions']}*\nYour correct percentage is "
-                f"*{(user_line['correct_answers']/user_line['total_questions'])*100}%*")
+                f"*{round((user_line['correct_answers']/user_line['total_questions'])*100, 2)}%*")
 
     def get_leaderboard(self):
         sort_criteria = [("correct_answers", -1)]

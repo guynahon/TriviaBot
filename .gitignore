@@ -1,4 +1,7 @@
 /bot_settings.py
+/build
+
+*.spec
 
 *.pyc
 *.bak

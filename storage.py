@@ -4,7 +4,7 @@ import random
 
 class Storage:
     def __init__(self, db_name, *, clear=False):
-        client = MongoClient()
+        client = MongoClient("mongodb+srv://guynahon:2tdp8ucaJuzkt4GC@cluster0.c4ruu73.mongodb.net/")
         if clear:
             client.drop_database(db_name)
         self.db = client.get_database(db_name)
